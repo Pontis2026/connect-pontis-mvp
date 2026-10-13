@@ -1,0 +1,8 @@
+{
+  "name": "connect-pontis-mvp",
+  "version": "1.0.0",
+  "dependencies": {
+    "@supabase/supabase-backend-js": "^0.0.1",
+    "mercadopago": "^1.5.17"
+  }
+}
