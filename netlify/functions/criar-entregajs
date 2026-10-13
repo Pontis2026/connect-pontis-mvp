@@ -1,0 +1,58 @@
+const { createClient } = require('@supabase/supabase-backend-js');
+const mercadopago = require('mercadopago');
+
+// Configuração das chaves protegidas que salvaremos no painel do Netlify depois
+mercadopago.configure({
+  access_token: process.env.MP_ACCESS_TOKEN 
+});
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+exports.handler = async (event, context) => {
+  // Garante que só aceita requisições do tipo POST (envio de dados)
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Método Não Permitido' };
+  }
+
+  try {
+    const { lojaId, enderecoDestino, valorEntrega } = JSON.parse(event.body);
+
+    // 1. Gera a intenção de cobrança no Mercado Pago
+    const preferencia = await mercadopago.preferences.create({
+      items: [
+        {
+          title: `Taxa de Entrega Connect Pontis`,
+          quantity: 1,
+          currency_id: 'BRL',
+          unit_price: parseFloat(valorEntrega)
+        }
+      ]
+    });
+
+    // 2. Salva o pedido automaticamente no banco de dados do Supabase
+    const { data, error } = await supabase
+      .from('entregas')
+      .insert([
+        { 
+          loja_id: lojaId, 
+          endereco_destino: enderecoDestino, 
+          id_pagamento_mp: preferencia.body.id,
+          status_pagamento: 'pendente'
+        }
+      ]);
+
+    if (error) throw error;
+
+    // Retorna o link oficial do Mercado Pago para o lojista pagar
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        checkoutUrl: preferencia.body.init_point
+      })
+    };
+
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+  }
+};
