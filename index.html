@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Connect Pontis - Painel de Entregas</title>
+  <style>
+    body { font-family: sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
+    .card { background: white; padding: 20px; border-radius: 8px; max-width: 500px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    input, button { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border-radius: 4px; }
+    input { border: 1px solid #ccc; }
+    button { background: #00bcd4; color: white; border: none; font-weight: bold; cursor: pointer; }
+    button:hover { background: #0097a7; }
+    
+    /* Área da Etiqueta Oculta na Tela do Computador */
+    #area-etiqueta { display: none; }
+
+    /* Estilo exclusivo para quando mandar IMPRIMIR */
+    @media print {
+      body * { display: none !important; } /* Esconde o site todo */
+      #area-etiqueta, #area-etiqueta * { display: block !important; } /* Mostra só a etiqueta */
+      #area-etiqueta {
+        width: 100mm;
+        height: 150mm;
+        padding: 5mm;
+        border: 2px dashed #000;
+        font-family: 'Courier New', monospace;
+      }
+      .barcode-placeholder { border: 1px solid #000; text-align: center; padding: 10px; margin-top: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>CONNECT PONTIS - Nova Entrega</h2>
+    <p><small>Origem: Identificada pelo seu login automaticamente</small></p>
+    
+    <label><strong>Endereço de Destino (Cliente):</strong></label>
+    <input type="text" id="destino" placeholder="Ex: Rua das Flores, 123 - Centro - São Paulo/SP">
+    
+    <button onclick="gerarEtiquetaETestar()">Gerar Pedido e Imprimir Etiqueta</button>
+  </div>
+
+  <!-- Área Oculta da Etiqueta Térmica -->
+  <div id="area-etiqueta">
+    <h3 style="text-align:center; margin-bottom:15px;">CONNECT PONTIS</h3>
+    <hr>
+    <p><strong>REMETENTE (SUA LOJA):</strong><br>Sua Empresa Cadastrada S.A.<br>Endereço de Origem Automático</p>
+    <hr>
+    <p><strong>DESTINATÁRIO (CLIENTE):</strong><br><span id="etiqueta-destino">O endereço digitado aparecerá aqui</span></p>
+    <hr>
+    <div class="barcode-placeholder">
+      ||||||||||||||||||||||||||||||||||||||||||||||<br>
+      *CP-PONTIS-MVP-2026*
+    </div>
+  </div>
+
+  <script>
+    function gerarEtiquetaETestar() {
+      const enderecoDigitado = document.getElementById('destino').value;
+      
+      if (!enderecoDigitado) {
+        alert('Por favor, digite um endereço de destino antes!');
+        return;
+      }
+      
+      // Atualiza o texto da etiqueta oculta com o que foi digitado
+      document.getElementById('etiqueta-destino').innerText = enderecoDigitado;
+      
+      // Abre a tela de impressão nativa do navegador Opera isolando a etiqueta
+      window.print();
+    }
+  </script>
+</body>
+</html>
